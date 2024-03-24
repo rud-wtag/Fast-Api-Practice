@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String
 from app.models.Base import Base
 
+
 class Books(Base):
   __tablename__ = "books"
 
