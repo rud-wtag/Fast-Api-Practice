@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Body, Depends
+from fastapi import APIRouter, Body, Depends, HTTPException
+from fastapi.responses import JSONResponse
 from app.models.Book import Books
 from app.core.database import get_db
 from sqlalchemy.orm import Session
@@ -17,51 +18,35 @@ router = APIRouter(tags=["books"])
 
 
 @router.get("/books")
-async def read_all_books():
-  return BOOKS
+async def read_all_books(db: Session = Depends(get_db)):
+  return db.query(Books).all()
 
 
-@router.get("/books/{book_title}")
-async def read_book(book_title: str):
-  for book in BOOKS:
-    if book.get("title").casefold() == book_title.casefold():
-      return book
+@router.get("/books/title/{book_title}")
+async def read_book_by_title(book_title: str, db: Session = Depends(get_db)):
+  return db.query(Books).filter(Books.title == book_title).first()
 
 
-@router.get("/books/")
-async def read_category_by_query(category: str):
-  books_to_return = []
-  for book in BOOKS:
-    if book.get("category").casefold() == category.casefold():
-      books_to_return.append(book)
-  return books_to_return
+@router.get("/books/category/{category}")
+async def read_book_by_category(category: str, db: Session = Depends(get_db)):
+  return db.query(Books).filter(Books.category == category).first()
 
 
-# Get all books from a specific author using path or query parameters
-@router.get("/books/byauthor/")
-async def read_books_by_author_path(author: str):
-  books_to_return = []
-  for book in BOOKS:
-    if book.get("author").casefold() == author.casefold():
-      books_to_return.append(book)
-
-  return books_to_return
+@router.get("/books/author/{author}")
+async def read_books_by_author(author: str, db: Session = Depends(get_db)):
+  return db.query(Books).filter(Books.author == author).first()
 
 
-@router.get("/books/{book_author}/")
-async def read_author_category_by_query(book_author: str, category: str):
-  books_to_return = []
-  for book in BOOKS:
-    if (
-      book.get("author").casefold() == book_author.casefold()
-      and book.get("category").casefold() == category.casefold()
-    ):
-      books_to_return.append(book)
-
-  return books_to_return
+@router.get("/books/author/{author}/category/{category}")
+async def read_author_category_by_query(
+  author: str, category: str, db: Session = Depends(get_db)
+):
+  return (
+    db.query(Books).filter(Books.author == author, Books.category == category).first()
+  )
 
 
-@router.post("/books/create_book")
+@router.post("/books")
 async def create_book(new_book=Body(None), db: Session = Depends(get_db)):
   book_model = Books()
   book_model.title = new_book["title"]
@@ -74,16 +59,35 @@ async def create_book(new_book=Body(None), db: Session = Depends(get_db)):
   return new_book
 
 
-@router.put("/books/update_book")
-async def update_book(updated_book=Body(None)):
-  for i in range(len(BOOKS)):
-    if BOOKS[i].get("title").casefold() == updated_book.get("title").casefold():
-      BOOKS[i] = updated_book
+@router.put("/books/{book_id}")
+async def update_book(
+  book_id: int, updated_book: dict = Body(None), db: Session = Depends(get_db)
+):
+  book = db.query(Books).filter(Books.id == book_id).first()
+  try:
+    if not book:
+      raise HTTPException(status_code=404, detail="Book not found")
+    for field, value in updated_book.items():
+      setattr(book, field, value)
+    db.commit()
+    db.refresh(book)
+    return book
+  except HTTPException as e:
+    return e
+  except Exception as e:
+    return e
 
 
-@router.delete("/books/delete_book/{book_title}")
-async def delete_book(book_title: str):
-  for i in range(len(BOOKS)):
-    if BOOKS[i].get("title").casefold() == book_title.casefold():
-      BOOKS.pop(i)
-      break
+@router.delete("/books/{book_id}")
+async def delete_book(book_id: int, db: Session = Depends(get_db)):
+  book = db.query(Books).filter(Books.id == book_id).first()
+  try:
+    if not book:
+      raise HTTPException(status_code=404, detail="Book not found")
+    book = db.delete(book)
+    db.commit()
+    return JSONResponse(content="books deleted successfully")
+  except HTTPException as e:
+    return e
+  except Exception as e:
+    return e
