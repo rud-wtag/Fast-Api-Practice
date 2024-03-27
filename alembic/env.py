@@ -4,7 +4,7 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from app.models.Base import Base
-from app.models.Book import Books
+from app.models import Book, User
 from dotenv import load_dotenv
 
 

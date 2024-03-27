@@ -14,7 +14,7 @@ BOOKS = [
   {"title": "Title Six", "author": "Author Two", "category": "math"},
 ]
 
-router = APIRouter(tags=["books"])
+router = APIRouter(prefix="/api/v1", tags=["books"])
 
 
 @router.get("/books")

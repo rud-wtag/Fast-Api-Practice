@@ -1,8 +1,8 @@
-"""books migration
+"""Book migration
 
-Revision ID: 4bb1afd54edc
+Revision ID: 8bf811f61774
 Revises:
-Create Date: 2024-03-25 11:25:27.464124
+Create Date: 2024-03-27 11:27:35.735015
 
 """
 
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = "4bb1afd54edc"
+revision: str = "8bf811f61774"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
