@@ -17,6 +17,8 @@ class Settings:
   POSTGRES_PORT: str = os.getenv("POSTGRES_PORT", 5432)
   POSTGRES_DB: str = os.getenv("POSTGRES_DB", "tdd")
   DATABASE_URL = os.getenv("DB_URL", "tdd")
+  SECRET_KEY = os.getenv("SECRET_KEY", "secret")
+  ALGORITHM = os.getenv("ALGORITHM")
 
 
 settings = Settings()

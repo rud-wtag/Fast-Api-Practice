@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from app.auth.requests import CreateUserRequest
+from app.auth.schemas import CreateUserRequest
 
 
 class AuthInterface(ABC):
