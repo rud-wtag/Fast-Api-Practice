@@ -1,20 +1,24 @@
 from pydantic import BaseModel
+from datetime import datetime
 
 
-class CreateUserRequest(BaseModel):
+class User(BaseModel):
   full_name: str
   email: str
+  avatar: str | None
+
+  class config:
+    orm_mode: True
+
+
+class CreateUserRequest(User):
   password: str
-  avatar: str | None
 
 
-class CreateUserResponse(BaseModel):
+class CreateUserResponse(User):
   id: int
-  full_name: str
-  email: str
-  avatar: str | None
 
 
 class Token(BaseModel):
   access_token: str
-  token_type: str
+  token_type: str = "Bearer"
