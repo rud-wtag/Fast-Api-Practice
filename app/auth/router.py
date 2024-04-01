@@ -24,11 +24,13 @@ async def register(
   return user
 
 
-@auth_router.post("/login", response_model=Token)
+@auth_router.post("/login")
 async def login_for_access_token(
   form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
   db: Session = Depends(get_db),
   auth_service: AuthInterface = Depends(AuthService),
 ):
   token = auth_service.login(form_data.username, form_data.password, db=db)
-  return {"access_token": token, "token_type": "bearer"}
+  response = JSONResponse({'msg':'Logged in successfully'})
+  response.set_cookie(key='token', value=token, httponly=True, secure=True)
+  return response
