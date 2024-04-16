@@ -1,6 +1,6 @@
 from typing import Annotated
 from app.auth.interfaces import AuthInterface, JWTTokenInterface
-from app.models.User import User
+from app.auth.models import User
 from app.auth.schemas import CreateUserRequest
 from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException, status
@@ -41,7 +41,6 @@ class JWTTokenService(JWTTokenInterface):
 class AuthService(AuthInterface):
   def __init__(self, jwt_token_service: JWTTokenInterface = Depends(JWTTokenService)):
     self.jwt_token_service = jwt_token_service
-
 
   def registration(
     self, create_user_request: CreateUserRequest, db: Session = Depends(get_db)

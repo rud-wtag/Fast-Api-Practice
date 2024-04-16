@@ -7,10 +7,12 @@ oauth2_bearer = OAuth2PasswordBearer(tokenUrl="api/v1/login")
 
 
 def get_current_user(
-  token: str = Cookie(None),
+  access_token: str = Cookie(None),
   jwt_token_service: JWTTokenInterface = Depends(JWTTokenService),
 ):
-  if token is None:
-    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Could not validate token')
-  user = jwt_token_service.verify_access_token(token)
+  if access_token is None:
+    raise HTTPException(
+      status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate token"
+    )
+  user = jwt_token_service.verify_access_token(access_token)
   return user

@@ -3,8 +3,9 @@ from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
-from app.models.Base import Base
-from app.models import Book, User
+from app.core.Base import Base
+from app.models import Book
+from app.auth.models import *
 from dotenv import load_dotenv
 
 
