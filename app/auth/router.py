@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, status, UploadFile, File
+from fastapi import APIRouter, Depends, status, UploadFile, File, Cookie
 from fastapi.responses import JSONResponse
 from app.core.database import get_db
 from sqlalchemy.orm import Session
 from app.auth.schemas import CreateUserRequest, CreateUserResponse, Token
-from app.auth.interfaces import AuthInterface
-from app.auth.service import AuthService
+from app.auth.interfaces import AuthInterface, JWTTokenInterface
+from app.auth.service import AuthService, JWTTokenService
 from typing import Annotated
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from app.auth.utils import get_current_user
@@ -18,41 +18,54 @@ auth_router = APIRouter(prefix="/api/v1", tags=["Authentication"])
 )
 async def register(
   create_user_request: CreateUserRequest,
-  db: Session = Depends(get_db),
   auth_service: AuthInterface = Depends(AuthService),
   # avatar: UploadFile = File(...)
 ):
-  user = auth_service.registration(create_user_request=create_user_request, db=db)
+  user = auth_service.registration(create_user_request=create_user_request)
   return user
 
 
 @auth_router.post("/login")
 async def login_for_access_token(
   form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-  db: Session = Depends(get_db),
   auth_service: AuthInterface = Depends(AuthService),
 ):
-  token = auth_service.login(form_data.username, form_data.password, db=db)
-  response = JSONResponse({"msg": "Logged in successfully"})
-  response.set_cookie(key="access_token", value=token, httponly=True, secure=True)
+  tokens = auth_service.login(form_data.username, form_data.password)
+  response = JSONResponse(
+    {"msg": "Logged in successfully", "access_token": tokens["access_token"]}
+  )
+  response.set_cookie(
+    key="access_token", value=tokens["access_token"], httponly=True, secure=True
+  )
+  response.set_cookie(
+    key="refresh_token", value=tokens["refresh_token"], httponly=True, secure=True
+  )
   return response
 
-@auth_router.post("/refresh")
-async def login_for_access_token(
-  form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-  db: Session = Depends(get_db),
-  auth_service: AuthInterface = Depends(AuthService),
+
+@auth_router.post("/refresh_token")
+async def refresh_token(
+  jwt_token_service: JWTTokenInterface = Depends(JWTTokenService),
+  refresh_token: str = Cookie(None),
 ):
-  token = auth_service.login(form_data.username, form_data.password, db=db)
-  response = JSONResponse({"msg": "Logged in successfully"})
-  response.set_cookie(key="access_token", value=token, httponly=True, secure=True)
+  access_token = jwt_token_service.refresh_token(refresh_token)
+  response = JSONResponse({"msg": "Token refreshed successfully"})
+  response.set_cookie(
+    key="access_token", value=access_token, httponly=True, secure=True
+  )
   return response
 
 
 @auth_router.post("/logout")
 async def logout(
   user: dict = Depends(get_current_user),
+  access_token = Cookie(None),
+  refresh_token = Cookie(None),
+  jwt_token_service: JWTTokenInterface = Depends(JWTTokenService),
 ):
   response = JSONResponse({"msg": "Logged out!"})
   response.delete_cookie(key="access_token")
+  response.delete_cookie(key="refresh_token")
+  jwt_token_service.blacklist_token(user['id'], access_token)
+  jwt_token_service.blacklist_token(user['id'], refresh_token)
   return response

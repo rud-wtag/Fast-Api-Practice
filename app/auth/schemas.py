@@ -7,14 +7,14 @@ class User(BaseModel):
   role_id: int | None = Field(default=None)
   full_name: str
   email: EmailStr | None = Field(default=None)
-  avatar: UploadFile
+  # avatar: UploadFile | None
 
   class config:
     orm_mode: True
 
 
 class CreateUserRequest(User):
-  password: str = Field(min_length=8)
+  password: str = Field(min_length=6)
 
   model_config = {
     "json_schema_extra": {
@@ -30,10 +30,6 @@ class CreateUserResponse(User):
 
 
 class Token(BaseModel):
-  id: int
   user_id: int
-  access_token: str
-  refresh_token: str
-  status: bool
-  # token_type: str = "Bearer"
-  created_date: datetime
+  token: str
+  status: bool = Field(default=True)

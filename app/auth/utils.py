@@ -14,5 +14,6 @@ def get_current_user(
     raise HTTPException(
       status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate token"
     )
-  user = jwt_token_service.verify_access_token(access_token)
+  user = jwt_token_service.verify_token(access_token)
+
   return user
