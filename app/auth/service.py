@@ -10,6 +10,7 @@ from datetime import timedelta, datetime
 from jose import jwt, JWTError
 from app.core.config import settings
 from app.auth.constants import REFRESH_TOKEN, ACCESS_TOKEN
+from fastapi.responses import JSONResponse
 
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -24,8 +25,12 @@ class JWTTokenService(JWTTokenInterface):
     self.db.commit()
     return token_model
 
-  def blacklist_token(self, user_id: int, token: str)->bool:
-    token_model = self.db.query(Token).filter(Token.user_id == user_id, Token.token == token).first()
+  def blacklist_token(self, user_id: int, token: str) -> bool:
+    token_model = (
+      self.db.query(Token)
+      .filter(Token.user_id == user_id, Token.token == token)
+      .first()
+    )
     if token_model:
       token_model.status = False
       self.db.commit()
@@ -34,7 +39,11 @@ class JWTTokenService(JWTTokenInterface):
     return False
 
   def is_blacklist_token(self, user_id: int, token: str) -> bool:
-    token_model = self.db.query(Token).filter(Token.user_id == user_id, Token.token == token).first()
+    token_model = (
+      self.db.query(Token)
+      .filter(Token.user_id == user_id, Token.token == token)
+      .first()
+    )
     return token_model and not token_model.status
 
   def create_token(
@@ -73,13 +82,13 @@ class JWTTokenService(JWTTokenInterface):
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Token has expired",
       )
-    
-    if self.is_blacklist_token(user_id,token):
+
+    if self.is_blacklist_token(user_id, token):
       raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Token blacklisted",
       )
-      
+
     user = (
       self.db.query(User)
       .filter(
@@ -144,6 +153,10 @@ class AuthService(AuthInterface):
     )
     return {"access_token": access_token, "refresh_token": refresh_token}
 
-  def logout(self):
-    """later"""
-    pass
+  def logout(self, user: dict, access_token: str, refresh_token: str):
+    response = JSONResponse({"msg": "Logged out!"})
+    response.delete_cookie(key="access_token")
+    response.delete_cookie(key="refresh_token")
+    self.jwt_token_service.blacklist_token(user["id"], access_token)
+    self.jwt_token_service.blacklist_token(user["id"], refresh_token)
+    return response

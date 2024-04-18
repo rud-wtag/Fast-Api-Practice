@@ -59,13 +59,8 @@ async def refresh_token(
 @auth_router.post("/logout")
 async def logout(
   user: dict = Depends(get_current_user),
-  access_token = Cookie(None),
-  refresh_token = Cookie(None),
-  jwt_token_service: JWTTokenInterface = Depends(JWTTokenService),
+  access_token=Cookie(None),
+  refresh_token=Cookie(None),
+  auth_service: AuthInterface = Depends(AuthService),
 ):
-  response = JSONResponse({"msg": "Logged out!"})
-  response.delete_cookie(key="access_token")
-  response.delete_cookie(key="refresh_token")
-  jwt_token_service.blacklist_token(user['id'], access_token)
-  jwt_token_service.blacklist_token(user['id'], refresh_token)
-  return response
+  return auth_service.logout(user, access_token, refresh_token)

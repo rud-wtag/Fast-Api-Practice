@@ -19,7 +19,7 @@ class AuthInterface(ABC):
     pass
 
   @abstractmethod
-  def logout(self):
+  def logout(self, user: dict, access_token: str, refresh_token: str):
     """login function that will implement child class"""
     pass
 
@@ -63,9 +63,10 @@ class JWTTokenInterface(ABC):
     Returns:
     `dict|bool`: access token dictionary or false
     """
+
   @abstractmethod
-  def blacklist_token(self, user_id: int, token: str)->bool:
-     """
+  def blacklist_token(self, user_id: int, token: str) -> bool:
+    """
     black access token when user logged out
 
     Parameters:
