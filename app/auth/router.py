@@ -1,12 +1,10 @@
-from fastapi import APIRouter, Depends, status, UploadFile, File, Cookie
+from fastapi import APIRouter, Depends, status, Cookie
 from fastapi.responses import JSONResponse
-from app.core.database import get_db
-from sqlalchemy.orm import Session
-from app.auth.schemas import CreateUserRequest, CreateUserResponse, Token
+from app.auth.schemas import CreateUserRequest, CreateUserResponse
 from app.auth.interfaces import AuthInterface, JWTTokenInterface
 from app.auth.service import AuthService, JWTTokenService
 from typing import Annotated
-from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordRequestForm
 from app.auth.utils import get_current_user
 
 
@@ -19,7 +17,6 @@ auth_router = APIRouter(prefix="/api/v1", tags=["Authentication"])
 async def register(
   create_user_request: CreateUserRequest,
   auth_service: AuthInterface = Depends(AuthService),
-  # avatar: UploadFile = File(...)
 ):
   user = auth_service.registration(create_user_request=create_user_request)
   return user

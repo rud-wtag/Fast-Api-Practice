@@ -2,6 +2,7 @@ from fastapi.security import OAuth2PasswordBearer
 from fastapi import Depends, Cookie, HTTPException, status
 from app.auth.interfaces import JWTTokenInterface
 from app.auth.service import JWTTokenService
+from app.auth.constants import USER, GUEST, ADMIN
 
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl="api/v1/login")
 
@@ -17,3 +18,23 @@ def get_current_user(
   user = jwt_token_service.verify_token(access_token)
 
   return user
+
+def admin(
+  user: dict = Depends(get_current_user)
+):
+  if user['role'] is not None and user['role'].name == ADMIN:
+    return user
+  else:
+    raise HTTPException(
+      status_code=status.HTTP_401_UNAUTHORIZED, detail="You are not authorized to do this action"
+    )
+  
+def auth(
+  user: dict = Depends(get_current_user)
+):
+  if user['role'] is not None and user['role'].name == USER:
+    return user
+  else:
+    raise HTTPException(
+      status_code=status.HTTP_401_UNAUTHORIZED, detail="You are not authorized to do this action"
+    )

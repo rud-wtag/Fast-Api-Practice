@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 from app.models.Book import Books
 from app.core.database import get_db
 from sqlalchemy.orm import Session
-from app.auth.utils import get_current_user
+from app.auth.utils import get_current_user, admin
 
 
 BOOKS = [
@@ -15,12 +15,12 @@ BOOKS = [
   {"title": "Title Six", "author": "Author Two", "category": "math"},
 ]
 
-router = APIRouter(prefix="/api/v1", tags=["books"])
+router = APIRouter(prefix="/api/v1", tags=["books"], dependencies=[Depends(admin)])
 
 
 @router.get("/books")
 async def read_all_books(
-  db: Session = Depends(get_db), user: dict = Depends(get_current_user)
+  db: Session = Depends(get_db)
 ):
   return db.query(Books).all()
 

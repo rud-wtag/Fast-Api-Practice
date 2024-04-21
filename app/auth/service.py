@@ -1,6 +1,6 @@
 from typing import Annotated
 from app.auth.interfaces import AuthInterface, JWTTokenInterface
-from app.auth.models import User, Token
+from app.auth.models import User, Token, Role
 from app.auth.schemas import CreateUserRequest
 from fastapi import Depends, HTTPException, status
 from app.core.database import get_db
@@ -9,8 +9,9 @@ from passlib.context import CryptContext
 from datetime import timedelta, datetime
 from jose import jwt, JWTError
 from app.core.config import settings
-from app.auth.constants import REFRESH_TOKEN, ACCESS_TOKEN
+from app.auth.constants import REFRESH_TOKEN, ACCESS_TOKEN, GUEST
 from fastapi.responses import JSONResponse
+from app.auth.constants import USER, GUEST, ADMIN
 
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -104,7 +105,7 @@ class JWTTokenService(JWTTokenInterface):
         detail="User not found or inactive",
       )
 
-    return {"username": username, "id": user_id}
+    return {"username": username, "id": user_id, 'role': user.role}
 
   def refresh_token(self, refresh_token: str) -> str | bool:
     token_details = self.verify_token(refresh_token)
@@ -129,10 +130,18 @@ class AuthService(AuthInterface):
     self.jwt_token_service = jwt_token_service
     self.db = db
 
+  def save_role(self, user_id: int, user_role: str = GUEST):
+    role = Role(name = user_role)
+    self.db.add(role)
+    self.db.commit()
+
   def registration(self, create_user_request: CreateUserRequest):
+    role = self.db.query(Role).filter(Role.name == USER).first()
+    print(role)
     user = User(
-      **create_user_request.model_dump(exclude=["password"]),
+      **create_user_request.model_dump(exclude=["password", "role_id"]),
       password=bcrypt_context.hash(create_user_request.password),
+      role_id = role.id
     )
     self.db.add(user)
     self.db.commit()
