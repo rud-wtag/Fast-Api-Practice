@@ -6,6 +6,7 @@ from app.auth.service import AuthService, JWTTokenService
 from typing import Annotated
 from fastapi.security import OAuth2PasswordRequestForm
 from app.auth.utils import get_current_user
+from app.core.Mail import Mail
 
 
 auth_router = APIRouter(prefix="/api/v1", tags=["Authentication"])
@@ -26,6 +27,7 @@ async def register(
 async def login_for_access_token(
   form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
   auth_service: AuthInterface = Depends(AuthService),
+  # mail = Depends(Mail)
 ):
   tokens = auth_service.login(form_data.username, form_data.password)
   response = JSONResponse(
@@ -37,6 +39,8 @@ async def login_for_access_token(
   response.set_cookie(
     key="refresh_token", value=tokens["refresh_token"], httponly=True, secure=True
   )
+  mail = Mail()
+  mail.send_email_async('test','a@b.com',{'title': 'Hello World', 'name': 'John Doe'})
   return response
 
 
@@ -61,3 +65,5 @@ async def logout(
   auth_service: AuthInterface = Depends(AuthService),
 ):
   return auth_service.logout(user, access_token, refresh_token)
+
+
