@@ -1,6 +1,5 @@
 import os
 from dotenv import load_dotenv
-
 from pathlib import Path
 
 env_path = Path(".") / ".env"
@@ -30,9 +29,12 @@ class Settings:
   MAIL_FROM = os.getenv("MAIL_FROM")
   MAIL_PORT = os.getenv("MAIL_PORT")
   MAIL_SERVER = os.getenv("MAIL_SERVER")
-  MAIL_SSL_TLS = os.getenv("MAIL_SSL_TLS")
-  USE_CREDENTIALS = os.getenv("USE_CREDENTIALS")
-  VALIDATE_CERTS = os.getenv("VALIDATE_CERTS")
+  MAIL_SSL_TLS = os.getenv('MAIL_SSL_TLS', 'False').lower() in ('true', '1', 't')
+  MAIL_STARTTLS = os.getenv('MAIL_STARTTLS', 'False').lower() in ('true', '1', 't')
+  USE_CREDENTIALS = os.getenv('USE_CREDENTIALS', 'False').lower() in ('true', '1', 't')
+  VALIDATE_CERTS = os.getenv('VALIDATE_CERTS', 'False').lower() in ('true', '1', 't')
+  MAIL_DEBUG = os.getenv('MAIL_DEBUG', 'True').lower() in ('true', '1', 't')
+  MAIL_DEBUG = os.getenv('MAIL_DEBUG', 'True').lower() in ('true', '1', 't')
 
 
 

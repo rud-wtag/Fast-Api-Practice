@@ -7,6 +7,7 @@ from typing import Annotated
 from fastapi.security import OAuth2PasswordRequestForm
 from app.auth.utils import get_current_user
 from app.core.Mail import Mail
+from starlette.background import BackgroundTasks
 
 
 auth_router = APIRouter(prefix="/api/v1", tags=["Authentication"])
@@ -25,9 +26,9 @@ async def register(
 
 @auth_router.post("/login")
 async def login_for_access_token(
+  background_task: BackgroundTasks,
   form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-  auth_service: AuthInterface = Depends(AuthService),
-  # mail = Depends(Mail)
+  auth_service: AuthInterface = Depends(AuthService)
 ):
   tokens = auth_service.login(form_data.username, form_data.password)
   response = JSONResponse(
@@ -40,7 +41,7 @@ async def login_for_access_token(
     key="refresh_token", value=tokens["refresh_token"], httponly=True, secure=True
   )
   mail = Mail()
-  mail.send_email_async('test','a@b.com',{'title': 'Hello World', 'name': 'John Doe'})
+  mail.send_email_background(background_task,'test','a@b.com','',template_body={'title': 'Hello World', 'name': 'John Doe'})
   return response
 
 
