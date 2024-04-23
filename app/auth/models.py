@@ -7,7 +7,7 @@ from sqlalchemy.orm import relationship
 class Role(Base):
   __tablename__ = "roles"
 
-  id = Column(Integer, primary_key=True, index=True, unique=True, autoincrement=True)
+  id = Column(Integer, primary_key=True, index=True, unique=True)
   name = Column(String(450), primary_key=True)
   created_at = Column(DateTime, default=datetime.now)
   updated_at = Column(DateTime, default=datetime.now)

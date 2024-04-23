@@ -137,11 +137,10 @@ class AuthService(AuthInterface):
 
   def registration(self, create_user_request: CreateUserRequest):
     role = self.db.query(Role).filter(Role.name == USER).first()
-    print(role)
     user = User(
       **create_user_request.model_dump(exclude=["password", "role_id"]),
       password=bcrypt_context.hash(create_user_request.password),
-      role_id = role.id
+      role_id = role.id if role else None
     )
     self.db.add(user)
     self.db.commit()
