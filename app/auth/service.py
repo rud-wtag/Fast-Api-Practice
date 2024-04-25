@@ -105,7 +105,7 @@ class JWTTokenService(JWTTokenInterface):
         detail="User not found or inactive",
       )
 
-    return {"username": username, "id": user_id, 'role': user.role}
+    return {"username": username, "id": user_id, "role": user.role}
 
   def refresh_token(self, refresh_token: str) -> str | bool:
     token_details = self.verify_token(refresh_token)
@@ -131,7 +131,7 @@ class AuthService(AuthInterface):
     self.db = db
 
   def save_role(self, user_id: int, user_role: str = GUEST):
-    role = Role(name = user_role)
+    role = Role(name=user_role)
     self.db.add(role)
     self.db.commit()
 
@@ -140,7 +140,7 @@ class AuthService(AuthInterface):
     user = User(
       **create_user_request.model_dump(exclude=["password", "role_id"]),
       password=bcrypt_context.hash(create_user_request.password),
-      role_id = role.id if role else None
+      role_id=role.id if role else None,
     )
     self.db.add(user)
     self.db.commit()

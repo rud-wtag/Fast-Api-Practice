@@ -19,22 +19,22 @@ def get_current_user(
 
   return user
 
-def admin(
-  user: dict = Depends(get_current_user)
-):
-  if user['role'] is not None and user['role'].name == ADMIN:
+
+def admin(user: dict = Depends(get_current_user)):
+  if user["role"] is not None and user["role"].name == ADMIN:
     return user
   else:
     raise HTTPException(
-      status_code=status.HTTP_401_UNAUTHORIZED, detail="You are not authorized to do this action"
+      status_code=status.HTTP_401_UNAUTHORIZED,
+      detail="You are not authorized to do this action",
     )
-  
-def auth(
-  user: dict = Depends(get_current_user)
-):
-  if user['role'] is not None and user['role'].name == USER:
+
+
+def auth(user: dict = Depends(get_current_user)):
+  if user["role"] is not None and user["role"].name == USER:
     return user
   else:
     raise HTTPException(
-      status_code=status.HTTP_401_UNAUTHORIZED, detail="You are not authorized to do this action"
+      status_code=status.HTTP_401_UNAUTHORIZED,
+      detail="You are not authorized to do this action",
     )

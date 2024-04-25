@@ -19,9 +19,7 @@ router = APIRouter(prefix="/api/v1", tags=["books"], dependencies=[Depends(admin
 
 
 @router.get("/books")
-async def read_all_books(
-  db: Session = Depends(get_db)
-):
+async def read_all_books(db: Session = Depends(get_db)):
   return db.query(Books).all()
 
 
