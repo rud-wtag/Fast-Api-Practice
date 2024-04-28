@@ -8,6 +8,8 @@ load_dotenv(dotenv_path=env_path)
 
 
 class Settings:
+  APP_ENV: str = os.getenv("APP_ENV", "local")
+
   PROJECT_NAME: str = "Demo project"
   PROJECT_VERSION: str = "1.0.0"
 

@@ -130,7 +130,7 @@ class AuthService(AuthInterface):
     self.jwt_token_service = jwt_token_service
     self.db = db
 
-  def save_role(self, user_id: int, user_role: str = GUEST):
+  def save_role(self, user_role: str = GUEST):
     role = Role(name=user_role)
     self.db.add(role)
     self.db.commit()
@@ -156,6 +156,7 @@ class AuthService(AuthInterface):
     access_token = self.jwt_token_service.create_token(
       user.email, user.id, timedelta(minutes=20)
     )
+
     refresh_token = self.jwt_token_service.create_token(
       user.email, user.id, timedelta(days=7), type=REFRESH_TOKEN
     )
