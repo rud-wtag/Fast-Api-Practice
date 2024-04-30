@@ -1,35 +1,127 @@
-from app.auth.service import AuthService
+from app.auth.service import AuthService, JWTTokenService
 from app.auth.models import Role, Token
 from app.auth.models import User
 from app.core.config import settings
-import pytest
+from fastapi.responses import JSONResponse
+import json
 from unittest.mock import MagicMock, patch
 from jose import jwt
 from datetime import datetime, timedelta
 from freezegun import freeze_time
 from fastapi import HTTPException
-from app.auth.constants import GUEST
+from app.auth.constants import ACCESS_TOKEN, ADMIN, REFRESH_TOKEN
+from app.auth.utils import admin
+from app.auth.schemas import CreateUserRequest
+from tests.conftest import mock_db_session
+
 
 class TestAuthService:
   def setup_method(self):
-    self.user = {"role": 'admin', "token": "test_token"}
+    self.user = {"role": ADMIN, "token": "test_token"}
 
   def test_save_role(self, mock_db_session):
+    with patch("app.auth.service.Role") as mock_role_class:
+      auth_service = AuthService(db=mock_db_session)
+
+      mock_db_session.add.return_value = None
+      mock_db_session.commit.return_value = None
+
+      mock_role_class.return_value = ADMIN
+
+      result = auth_service.save_role(self.user.get("role"))
+
+      assert mock_db_session.add.called
+      assert mock_db_session.commit.called
+      assert result == None
+      mock_db_session.add.assert_called_once_with(ADMIN)
+      mock_role_class.assert_called_with(name=ADMIN)
+
+  @patch("app.auth.service.bcrypt_context")
+  @patch("app.auth.service.User")
+  def test_registration(self, mock_user_class, mock_bcrypt_context, mock_db_session):
+    request_data = {
+      "full_name": "Mr. A",
+      "email": "demo@mail.com",
+      "password": "secret",
+    }
+
+    create_user_request = CreateUserRequest(
+      full_name=request_data["full_name"],
+      email=request_data["email"],
+      password=request_data["password"],
+    )
     auth_service = AuthService(db=mock_db_session)
+    mock_user_class.return_value = request_data
+    mock_bcrypt_context.hash.return_value = request_data["password"]
+    mock_db_session.query().filter().first.return_value = None
 
-    mock_db_session.add.return_value = None
-    mock_db_session.commit.return_value = None
+    user = auth_service.registration(create_user_request)
 
-    result = auth_service.save_role(self.user.get("role"))
-
-    assert mock_db_session.add.called
+    mock_db_session.add.assert_called_once_with(request_data)
     assert mock_db_session.commit.called
-    assert result == None
-    actual_role_arg = mock_db_session.add.call_args.args[0]
-    print("Role object passed to add method:", actual_role_arg)  # Debugging
-    # mock_db_session.add.assert_called_once_with(Role(name=self.user.get("role")))
-    mock_db_session.add.assert_called_once_with(Role(name=self.user.get("role")))
-    # assert mock_db_session.add.call_args[0][0] == Role(name = GUEST)
-    # assert mock_db_session.add.call_args_list[0][0] == (
-    #   Role(name='guest')
-    # )
+    assert user == request_data
+    mock_user_class.assert_called_once_with(
+      **create_user_request.model_dump(exclude=["password", "role_id"]),
+      password=request_data["password"],
+      role_id=None,
+    )
+
+  @patch("app.auth.service.bcrypt_context")
+  @patch("app.auth.service.User")
+  def test_login(self, mock_user_class, mock_bcrypt_context, mock_db_session):
+    request_data = {
+      "email": "demo@mail.com",
+      "password": "secret",
+      "hashed_password": "secret_hashed",
+      "token": "test_token",
+    }
+
+    mock_jwt_token_service = MagicMock(JWTTokenService)
+    auth_service = AuthService(
+      db=mock_db_session, jwt_token_service=mock_jwt_token_service
+    )
+
+    mock_user_class.email.return_value = request_data["email"]
+    mock_user_object = MagicMock(spec=User)
+    mock_user_object.password.return_value = request_data["hashed_password"]
+    mock_db_session.query().filter().first.return_value = mock_user_object
+    mock_bcrypt_context.verify.return_value = True
+    mock_jwt_token_service.create_token.return_value = request_data["token"]
+
+    result = auth_service.login(request_data["email"], request_data["password"])
+
+    assert result == {
+      "access_token": request_data["token"],
+      "refresh_token": request_data["token"],
+    }
+  @patch('app.auth.service.JSONResponse')
+  def test_logout(self,json_response_class,  mock_db_session):
+    data = {
+      'access_token': ACCESS_TOKEN,
+      'refresh_token': REFRESH_TOKEN
+    }
+    user = {
+      'id': 1
+    }
+    mock_jwt_token_service = MagicMock(JWTTokenService)
+    auth_service = AuthService(
+      db=mock_db_session, jwt_token_service=mock_jwt_token_service
+    )
+
+    result = auth_service.logout(user, data['access_token'], data['refresh_token'])
+
+    json_response_instance = json_response_class.return_value
+    json_response_instance.delete_cookie.assert_any_call(key="access_token")
+    json_response_instance.delete_cookie.assert_any_call(key="refresh_token")
+
+    mock_jwt_token_service.blacklist_token.assert_any_call(user['id'], ACCESS_TOKEN)
+    mock_jwt_token_service.blacklist_token.assert_any_call(user['id'], REFRESH_TOKEN)
+    json_response_class.assert_called_with({"msg": "Logged out!"})
+    assert result is not None
+
+
+
+
+
+
+    # assert mock_db_session.add.call_args[0][0].__dict__ == Role(name = ADMIN).__dict__

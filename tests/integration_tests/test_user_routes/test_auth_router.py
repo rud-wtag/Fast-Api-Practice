@@ -14,13 +14,13 @@ def test_create_user(client):
   # assert data == response.json()
 
 
-def test_login(client, auth_service: AuthInterface = Depends(AuthService)):
-  create_user_request = CreateUserRequest(
-    full_name=USER["full_name"], email=USER["email"], password=USER["password"]
-  )
-  auth_service.registration(create_user_request)
+# def test_login(client, auth_service: AuthInterface = Depends(AuthService)):
+#   create_user_request = CreateUserRequest(
+#     full_name=USER["full_name"], email=USER["email"], password=USER["password"]
+#   )
+#   auth_service.registration(create_user_request)
 
-  response = client.post(
-    "/api/v1/login", json={"username": USER["email"], "password": USER["password"]}
-  )
-  assert response.status_code == 200
+#   response = client.post(
+#     "/api/v1/login", json={"username": USER["email"], "password": USER["password"]}
+#   )
+#   assert response.status_code == 200

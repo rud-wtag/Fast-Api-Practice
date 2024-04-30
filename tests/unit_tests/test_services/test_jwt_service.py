@@ -188,5 +188,5 @@ class TestJwtTokenService:
         token_service.create_token = MagicMock()
         token_service.create_token.return_value = "test_token"
         token_service.refresh_token("test_token")
-    assert exc_info.value.status_code == 402
+    assert exc_info.value.status_code == 401
     assert exc_info.value.detail == "Could not validate the user"
