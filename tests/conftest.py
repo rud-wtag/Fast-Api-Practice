@@ -9,6 +9,11 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from typing import Generator
 from app.core.config import settings
+from app.auth.models import User, Role
+from passlib.context import CryptContext
+from app.auth.constants import ADMIN
+
+bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 if settings.APP_ENV not in ["test"]:
@@ -66,9 +71,24 @@ def client(app_test, test_session):
 def mock_db_session():
   return MagicMock()
 
-
-# @pytest.fixture
-# def insert_user_data():
-#   auth_service = AuthService()
-#   create_user_request = CreateUserRequest(full_name=USER['full_name'], email=USER["email"], password=USER["password"])
-#   auth_service.registration(create_user_request)
+@pytest.fixture
+def insert_user_data(test_session):
+  db = test_session
+  def create_role():
+    role = Role(
+      id=1,
+      name=ADMIN
+    )
+    db.add(role)
+    db.commit()
+  create_role()
+  role = db.query(Role).filter(Role.name == ADMIN).first()
+  user = User(
+    id=1,
+    full_name = USER["full_name"],
+    email = USER["email"],
+    password=bcrypt_context.hash(USER["password"]),
+    role_id=role.id if role else None,
+  )
+  db.add(user)
+  db.commit()
