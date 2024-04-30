@@ -1,4 +1,3 @@
-import fastapi
 import pytest
 from fastapi.testclient import TestClient
 from app.main import app
@@ -9,10 +8,6 @@ from app.core.database import get_db
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from typing import Generator
-from app.auth.service import AuthService
-from app.auth.interfaces import AuthInterface
-from fastapi import Depends
-from app.auth.schemas import CreateUserRequest
 from app.core.config import settings
 
 

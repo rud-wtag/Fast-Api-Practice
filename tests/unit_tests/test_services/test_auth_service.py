@@ -1,18 +1,8 @@
 from app.auth.service import AuthService, JWTTokenService
-from app.auth.models import Role, Token
 from app.auth.models import User
-from app.core.config import settings
-from fastapi.responses import JSONResponse
-import json
 from unittest.mock import MagicMock, patch
-from jose import jwt
-from datetime import datetime, timedelta
-from freezegun import freeze_time
-from fastapi import HTTPException
 from app.auth.constants import ACCESS_TOKEN, ADMIN, REFRESH_TOKEN
-from app.auth.utils import admin
 from app.auth.schemas import CreateUserRequest
-from tests.conftest import mock_db_session
 
 
 class TestAuthService:
