@@ -4,7 +4,7 @@ logger.remove(0)
 
 logger.add(
   "loguru.log",
-  level='DEBUG',
+  level="DEBUG",
   rotation="1 week",
   retention="30 days",
   compression="zip",

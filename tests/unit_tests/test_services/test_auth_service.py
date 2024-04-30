@@ -94,34 +94,25 @@ class TestAuthService:
       "access_token": request_data["token"],
       "refresh_token": request_data["token"],
     }
-  @patch('app.auth.service.JSONResponse')
-  def test_logout(self,json_response_class,  mock_db_session):
-    data = {
-      'access_token': ACCESS_TOKEN,
-      'refresh_token': REFRESH_TOKEN
-    }
-    user = {
-      'id': 1
-    }
+
+  @patch("app.auth.service.JSONResponse")
+  def test_logout(self, json_response_class, mock_db_session):
+    data = {"access_token": ACCESS_TOKEN, "refresh_token": REFRESH_TOKEN}
+    user = {"id": 1}
     mock_jwt_token_service = MagicMock(JWTTokenService)
     auth_service = AuthService(
       db=mock_db_session, jwt_token_service=mock_jwt_token_service
     )
 
-    result = auth_service.logout(user, data['access_token'], data['refresh_token'])
+    result = auth_service.logout(user, data["access_token"], data["refresh_token"])
 
     json_response_instance = json_response_class.return_value
     json_response_instance.delete_cookie.assert_any_call(key="access_token")
     json_response_instance.delete_cookie.assert_any_call(key="refresh_token")
 
-    mock_jwt_token_service.blacklist_token.assert_any_call(user['id'], ACCESS_TOKEN)
-    mock_jwt_token_service.blacklist_token.assert_any_call(user['id'], REFRESH_TOKEN)
+    mock_jwt_token_service.blacklist_token.assert_any_call(user["id"], ACCESS_TOKEN)
+    mock_jwt_token_service.blacklist_token.assert_any_call(user["id"], REFRESH_TOKEN)
     json_response_class.assert_called_with({"msg": "Logged out!"})
     assert result is not None
-
-
-
-
-
 
     # assert mock_db_session.add.call_args[0][0].__dict__ == Role(name = ADMIN).__dict__
