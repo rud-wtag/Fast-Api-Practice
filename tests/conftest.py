@@ -6,8 +6,8 @@ from fastapi.testclient import TestClient
 from passlib.context import CryptContext
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 
-from app.api.v1.books import BOOKS
 from app.auth.constants import ADMIN
 from app.auth.models import Role, User
 from app.core.Base import Base
@@ -22,10 +22,21 @@ if settings.APP_ENV not in ["test"]:
   msg = f"ENV is not test, it is {settings.APP_ENV}"
   pytest.exit(msg)
 
-engine = create_engine("sqlite:///./fastapi.db")
+engine = create_engine(
+   "sqlite:///:memory:", connect_args={"check_same_thread": False},
+    poolclass=StaticPool
+)
 SessionTesting = sessionmaker(autoflush=False, autocommit=False, bind=engine)
 
 USER = {"full_name": "Mr. A", "email": "demo@mail.com", "password": "secret"}
+BOOKS = [
+  {"title": "Title One", "author": "Author One", "category": "science"},
+  {"title": "Title Two", "author": "Author Two", "category": "science"},
+  {"title": "Title Three", "author": "Author Three", "category": "history"},
+  {"title": "Title Four", "author": "Author Four", "category": "math"},
+  {"title": "Title Five", "author": "Author Five", "category": "math"},
+  {"title": "Title Six", "author": "Author Two", "category": "math"},
+]
 
 
 @pytest.fixture

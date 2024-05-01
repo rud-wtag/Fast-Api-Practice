@@ -32,6 +32,8 @@ def admin(user: dict = Depends(get_current_user)):
 
 
 def auth(user: dict = Depends(get_current_user)):
+  if user["role"] is not None and user["role"].name == ADMIN:
+    return user
   if user["role"] is not None and user["role"].name == USER:
     return user
   else:

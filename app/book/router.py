@@ -2,12 +2,12 @@ from fastapi import APIRouter, Body, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from app.auth.utils import admin
+from app.auth.utils import admin, auth
 from app.book.models import Books
 from app.core.database import get_db
 
 books_router = APIRouter(
-  prefix="/api/v1", tags=["books"], dependencies=[Depends(admin)]
+  prefix="/api/v1", tags=["books"], dependencies=[Depends(auth)]
 )
 
 
@@ -40,7 +40,7 @@ async def read_author_category_by_query(
   )
 
 
-@books_router.post("/books")
+@books_router.post("/books", dependencies=[Depends(admin)])
 async def create_book(new_book=Body(None), db: Session = Depends(get_db)):
   book_model = Books()
   book_model.title = new_book["title"]

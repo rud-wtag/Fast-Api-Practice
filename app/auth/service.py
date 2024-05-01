@@ -1,10 +1,11 @@
 from datetime import datetime, timedelta
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, HTTPException
 from fastapi.responses import JSONResponse
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 from app.auth.constants import ACCESS_TOKEN, GUEST, REFRESH_TOKEN, USER
 from app.auth.interfaces import AuthInterface, JWTTokenInterface
@@ -136,14 +137,20 @@ class AuthService(AuthInterface):
     self.db.commit()
 
   def registration(self, create_user_request: CreateUserRequest):
-    role = self.db.query(Role).filter(Role.name == USER).first()
-    user = User(
-      **create_user_request.model_dump(exclude=["password", "role_id"]),
-      password=bcrypt_context.hash(create_user_request.password),
-      role_id=role.id if role else None,
-    )
-    self.db.add(user)
-    self.db.commit()
+    try:
+      role = self.db.query(Role).filter(Role.name == USER).first()
+      user = User(
+        **create_user_request.model_dump(exclude=["password", "role_id"]),
+        password=bcrypt_context.hash(create_user_request.password),
+        role_id=role.id if role else None,
+      )
+      self.db.add(user)
+      self.db.commit()
+    except IntegrityError  as e:
+      if "unique constraint" in str(e):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already exists")
+      else:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to register user")
     return user
 
   def login(self, email: str, password: str):

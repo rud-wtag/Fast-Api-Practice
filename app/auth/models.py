@@ -21,7 +21,7 @@ class User(Base):
   id = Column(Integer, primary_key=True, index=True, unique=True)
   role_id = Column(Integer, ForeignKey("roles.id", ondelete="SET NULL"), nullable=True)
   full_name = Column(String)
-  email = Column(String)
+  email = Column(String, unique=True)
   password = Column(String)
   avatar = Column(String, nullable=True)
   role = relationship("Role")

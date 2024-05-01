@@ -4,7 +4,7 @@ from pydantic import BaseModel, EmailStr, Field
 class User(BaseModel):
   role_id: int | None = Field(default=None)
   full_name: str
-  email: EmailStr | None = Field(default=None)
+  email: EmailStr
   # avatar: UploadFile | None
 
   class config:
@@ -30,4 +30,4 @@ class CreateUserResponse(User):
 class Token(BaseModel):
   user_id: int
   token: str
-  status: bool = Field(default=True)
+  status: bool = Field(default=True,)
