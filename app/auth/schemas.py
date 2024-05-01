@@ -1,6 +1,4 @@
-from pydantic import BaseModel, Field, EmailStr, FilePath
-from datetime import datetime
-from fastapi import UploadFile
+from pydantic import BaseModel, EmailStr, Field
 
 
 class User(BaseModel):

@@ -1,8 +1,9 @@
-from app.auth.service import AuthService, JWTTokenService
-from app.auth.models import User
 from unittest.mock import MagicMock, patch
+
 from app.auth.constants import ACCESS_TOKEN, ADMIN, REFRESH_TOKEN
+from app.auth.models import User
 from app.auth.schemas import CreateUserRequest
+from app.auth.service import AuthService, JWTTokenService
 
 
 class TestAuthService:

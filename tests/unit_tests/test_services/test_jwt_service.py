@@ -1,13 +1,14 @@
-from app.auth.service import JWTTokenService
-from app.auth.models import Token
-from app.auth.models import User
-from app.core.config import settings
-import pytest
-from unittest.mock import MagicMock, patch
-from jose import jwt
 from datetime import datetime, timedelta
-from freezegun import freeze_time
+from unittest.mock import MagicMock, patch
+
+import pytest
 from fastapi import HTTPException
+from freezegun import freeze_time
+from jose import jwt
+
+from app.auth.models import Token, User
+from app.auth.service import JWTTokenService
+from app.core.config import settings
 
 
 class TestJwtTokenService:

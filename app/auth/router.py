@@ -1,12 +1,13 @@
-from fastapi import APIRouter, Depends, status, Cookie
-from fastapi.responses import JSONResponse
-from app.auth.schemas import CreateUserRequest, CreateUserResponse
-from app.auth.interfaces import AuthInterface, JWTTokenInterface
-from app.auth.service import AuthService, JWTTokenService
 from typing import Annotated
-from fastapi.security import OAuth2PasswordRequestForm
-from app.auth.utils import get_current_user
 
+from fastapi import APIRouter, Cookie, Depends, status
+from fastapi.responses import JSONResponse
+from fastapi.security import OAuth2PasswordRequestForm
+
+from app.auth.interfaces import AuthInterface, JWTTokenInterface
+from app.auth.schemas import CreateUserRequest, CreateUserResponse
+from app.auth.service import AuthService, JWTTokenService
+from app.auth.utils import get_current_user
 
 auth_router = APIRouter(prefix="/api/v1", tags=["Authentication"])
 

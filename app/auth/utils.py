@@ -1,8 +1,9 @@
+from fastapi import Cookie, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from fastapi import Depends, Cookie, HTTPException, status
+
+from app.auth.constants import ADMIN, USER
 from app.auth.interfaces import JWTTokenInterface
 from app.auth.service import JWTTokenService
-from app.auth.constants import USER, GUEST, ADMIN
 
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl="api/v1/login")
 

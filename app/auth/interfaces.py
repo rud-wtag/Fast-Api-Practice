@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
-from app.auth.schemas import CreateUserRequest
-from sqlalchemy.orm import Session
 from datetime import timedelta
+
 from app.auth.constants import ACCESS_TOKEN
+from app.auth.schemas import CreateUserRequest
 
 
 class AuthInterface(ABC):

@@ -1,17 +1,19 @@
+from typing import Generator
+from unittest.mock import MagicMock
+
 import pytest
 from fastapi.testclient import TestClient
-from app.main import app
-from unittest.mock import MagicMock
-from app.api.v1.books import BOOKS
-from app.core.Base import Base
-from app.core.database import get_db
+from passlib.context import CryptContext
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from typing import Generator
-from app.core.config import settings
-from app.auth.models import User, Role
-from passlib.context import CryptContext
+
+from app.api.v1.books import BOOKS
 from app.auth.constants import ADMIN
+from app.auth.models import Role, User
+from app.core.Base import Base
+from app.core.config import settings
+from app.core.database import get_db
+from app.main import app
 
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -30,10 +32,6 @@ USER = {"full_name": "Mr. A", "email": "demo@mail.com", "password": "secret"}
 def books():
   """Fixture for creating a FastAPI test client"""
   return BOOKS
-
-
-# @pytest.fixture
-# USER = {"full_name": "Mr. A", "email": "demo@mail.com", "password": "secret"}
 
 
 @pytest.fixture
@@ -71,22 +69,22 @@ def client(app_test, test_session):
 def mock_db_session():
   return MagicMock()
 
+
 @pytest.fixture
 def insert_user_data(test_session):
   db = test_session
+
   def create_role():
-    role = Role(
-      id=1,
-      name=ADMIN
-    )
+    role = Role(id=1, name=ADMIN)
     db.add(role)
     db.commit()
+
   create_role()
   role = db.query(Role).filter(Role.name == ADMIN).first()
   user = User(
     id=1,
-    full_name = USER["full_name"],
-    email = USER["email"],
+    full_name=USER["full_name"],
+    email=USER["email"],
     is_active=True,
     password=bcrypt_context.hash(USER["password"]),
     role_id=role.id if role else None,

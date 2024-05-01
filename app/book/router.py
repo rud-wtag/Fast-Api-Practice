@@ -1,44 +1,37 @@
-from fastapi import APIRouter, Body, Depends, HTTPException, status
+from fastapi import APIRouter, Body, Depends, HTTPException
 from fastapi.responses import JSONResponse
-from app.models.Book import Books
-from app.core.database import get_db
 from sqlalchemy.orm import Session
-from app.auth.utils import get_current_user, admin
+
+from app.auth.utils import admin
+from app.book.models import Books
+from app.core.database import get_db
+
+books_router = APIRouter(
+  prefix="/api/v1", tags=["books"], dependencies=[Depends(admin)]
+)
 
 
-BOOKS = [
-  {"title": "Title One", "author": "Author One", "category": "science"},
-  {"title": "Title Two", "author": "Author Two", "category": "science"},
-  {"title": "Title Three", "author": "Author Three", "category": "history"},
-  {"title": "Title Four", "author": "Author Four", "category": "math"},
-  {"title": "Title Five", "author": "Author Five", "category": "math"},
-  {"title": "Title Six", "author": "Author Two", "category": "math"},
-]
-
-router = APIRouter(prefix="/api/v1", tags=["books"], dependencies=[Depends(admin)])
-
-
-@router.get("/books")
+@books_router.get("/books")
 async def read_all_books(db: Session = Depends(get_db)):
   return db.query(Books).all()
 
 
-@router.get("/books/title/{book_title}")
+@books_router.get("/books/title/{book_title}")
 async def read_book_by_title(book_title: str, db: Session = Depends(get_db)):
   return db.query(Books).filter(Books.title == book_title).first()
 
 
-@router.get("/books/category/{category}")
+@books_router.get("/books/category/{category}")
 async def read_book_by_category(category: str, db: Session = Depends(get_db)):
   return db.query(Books).filter(Books.category == category).first()
 
 
-@router.get("/books/author/{author}")
+@books_router.get("/books/author/{author}")
 async def read_books_by_author(author: str, db: Session = Depends(get_db)):
   return db.query(Books).filter(Books.author == author).first()
 
 
-@router.get("/books/author/{author}/category/{category}")
+@books_router.get("/books/author/{author}/category/{category}")
 async def read_author_category_by_query(
   author: str, category: str, db: Session = Depends(get_db)
 ):
@@ -47,7 +40,7 @@ async def read_author_category_by_query(
   )
 
 
-@router.post("/books")
+@books_router.post("/books")
 async def create_book(new_book=Body(None), db: Session = Depends(get_db)):
   book_model = Books()
   book_model.title = new_book["title"]
@@ -60,7 +53,7 @@ async def create_book(new_book=Body(None), db: Session = Depends(get_db)):
   return new_book
 
 
-@router.put("/books/{book_id}")
+@books_router.put("/books/{book_id}")
 async def update_book(
   book_id: int, updated_book: dict = Body(None), db: Session = Depends(get_db)
 ):
@@ -79,7 +72,7 @@ async def update_book(
     return e
 
 
-@router.delete("/books/{book_id}")
+@books_router.delete("/books/{book_id}")
 async def delete_book(book_id: int, db: Session = Depends(get_db)):
   book = db.query(Books).filter(Books.id == book_id).first()
   try:

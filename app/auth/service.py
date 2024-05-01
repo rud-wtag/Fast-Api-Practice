@@ -1,17 +1,17 @@
-from typing import Annotated
-from app.auth.interfaces import AuthInterface, JWTTokenInterface
-from app.auth.models import User, Token, Role
-from app.auth.schemas import CreateUserRequest
+from datetime import datetime, timedelta
+
 from fastapi import Depends, HTTPException, status
-from app.core.database import get_db
-from sqlalchemy.orm import Session
-from passlib.context import CryptContext
-from datetime import timedelta, datetime
-from jose import jwt, JWTError
-from app.core.config import settings
-from app.auth.constants import REFRESH_TOKEN, ACCESS_TOKEN, GUEST
 from fastapi.responses import JSONResponse
-from app.auth.constants import USER, GUEST, ADMIN
+from jose import JWTError, jwt
+from passlib.context import CryptContext
+from sqlalchemy.orm import Session
+
+from app.auth.constants import ACCESS_TOKEN, GUEST, REFRESH_TOKEN, USER
+from app.auth.interfaces import AuthInterface, JWTTokenInterface
+from app.auth.models import Role, Token, User
+from app.auth.schemas import CreateUserRequest
+from app.core.config import settings
+from app.core.database import get_db
 
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
