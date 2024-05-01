@@ -87,6 +87,7 @@ def insert_user_data(test_session):
     id=1,
     full_name = USER["full_name"],
     email = USER["email"],
+    is_active=True,
     password=bcrypt_context.hash(USER["password"]),
     role_id=role.id if role else None,
   )
