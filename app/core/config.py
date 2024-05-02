@@ -19,8 +19,20 @@ class Settings:
   POSTGRES_PORT: str = os.getenv("POSTGRES_PORT", 5432)
   POSTGRES_DB: str = os.getenv("POSTGRES_DB", "tdd")
   DATABASE_URL = os.getenv("DB_URL", "tdd")
+
   SECRET_KEY = os.getenv("SECRET_KEY", "secret")
   ALGORITHM = os.getenv("ALGORITHM")
+
+  LOG_LEVEL = os.getenv("LOG_LEVEL", "DEBUG")
+  LOG_FILE = os.getenv("LOG_FILE", "app.log")
+  LOG_FORMAT = os.getenv("LOG_FORMAT", "{time} - {level} - {message}")
+  LOG_ROTATION = os.getenv("LOG_ROTATION", "100 MB")
+  LOG_RENTATION = os.getenv("LOG_RENTATION", "30 days")
+  LOG_SERIALIZATION = os.getenv("LOG_SERIALIZATION", "false").lower() in (
+    "true",
+    "1",
+    "t",
+  )
 
 
 settings = Settings()

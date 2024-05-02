@@ -30,4 +30,6 @@ class CreateUserResponse(User):
 class Token(BaseModel):
   user_id: int
   token: str
-  status: bool = Field(default=True,)
+  status: bool = Field(
+    default=True,
+  )

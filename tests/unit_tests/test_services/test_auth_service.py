@@ -27,7 +27,7 @@ class TestAuthService:
       mock_db_session.add.assert_called_once_with(ADMIN)
       mock_role_class.assert_called_with(name=ADMIN)
 
-  @patch("app.auth.service.bcrypt_context")
+  @patch("app.auth.service.get_hashed_password")
   @patch("app.auth.service.User")
   def test_registration(self, mock_user_class, mock_bcrypt_context, mock_db_session):
     request_data = {
@@ -43,7 +43,7 @@ class TestAuthService:
     )
     auth_service = AuthService(db=mock_db_session)
     mock_user_class.return_value = request_data
-    mock_bcrypt_context.hash.return_value = request_data["password"]
+    mock_bcrypt_context.return_value = request_data["password"]
     mock_db_session.query().filter().first.return_value = None
 
     user = auth_service.registration(create_user_request)
@@ -57,7 +57,7 @@ class TestAuthService:
       role_id=None,
     )
 
-  @patch("app.auth.service.bcrypt_context")
+  @patch("app.auth.service.verify_password")
   @patch("app.auth.service.User")
   def test_login(self, mock_user_class, mock_bcrypt_context, mock_db_session):
     request_data = {
@@ -76,7 +76,7 @@ class TestAuthService:
     mock_user_object = MagicMock(spec=User)
     mock_user_object.password.return_value = request_data["hashed_password"]
     mock_db_session.query().filter().first.return_value = mock_user_object
-    mock_bcrypt_context.verify.return_value = True
+    mock_bcrypt_context.return_value = True
     mock_jwt_token_service.create_token.return_value = request_data["token"]
 
     result = auth_service.login(request_data["email"], request_data["password"])

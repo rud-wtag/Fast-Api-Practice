@@ -3,28 +3,24 @@ from unittest.mock import MagicMock
 
 import pytest
 from fastapi.testclient import TestClient
-from passlib.context import CryptContext
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.auth.constants import ADMIN
+from app.auth.helpers import get_hashed_password
 from app.auth.models import Role, User
 from app.core.Base import Base
 from app.core.config import settings
 from app.core.database import get_db
 from app.main import app
 
-bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
 if settings.APP_ENV not in ["test"]:
   msg = f"ENV is not test, it is {settings.APP_ENV}"
   pytest.exit(msg)
 
 engine = create_engine(
-   "sqlite:///:memory:", connect_args={"check_same_thread": False},
-    poolclass=StaticPool
+  "sqlite:///:memory:", connect_args={"check_same_thread": False}, poolclass=StaticPool
 )
 SessionTesting = sessionmaker(autoflush=False, autocommit=False, bind=engine)
 
@@ -97,7 +93,7 @@ def insert_user_data(test_session):
     full_name=USER["full_name"],
     email=USER["email"],
     is_active=True,
-    password=bcrypt_context.hash(USER["password"]),
+    password=get_hashed_password(USER["password"]),
     role_id=role.id if role else None,
   )
   db.add(user)

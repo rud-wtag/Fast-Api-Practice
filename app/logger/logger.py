@@ -1,12 +1,14 @@
 from loguru import logger
 
+from app.core.config import settings
+
 logger.remove(0)
 
 logger.add(
-  "loguru.log",
-  level="DEBUG",
-  rotation="1 week",
-  retention="30 days",
+  settings.LOG_FILE,
+  level=settings.LOG_LEVEL,
+  rotation=settings.LOG_ROTATION,
+  retention=settings.LOG_RENTATION,
   compression="zip",
-  serialize=True,
+  serialize=settings.LOG_SERIALIZATION,
 )

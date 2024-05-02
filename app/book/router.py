@@ -6,9 +6,7 @@ from app.auth.utils import admin, auth
 from app.book.models import Books
 from app.core.database import get_db
 
-books_router = APIRouter(
-  prefix="/api/v1", tags=["books"], dependencies=[Depends(auth)]
-)
+books_router = APIRouter(prefix="/api/v1", tags=["books"], dependencies=[Depends(auth)])
 
 
 @books_router.get("/books")

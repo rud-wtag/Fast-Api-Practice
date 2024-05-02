@@ -1,20 +1,18 @@
 from datetime import datetime, timedelta
 
-from fastapi import Depends, HTTPException, status, HTTPException
+from fastapi import Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from jose import JWTError, jwt
-from passlib.context import CryptContext
-from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
 
 from app.auth.constants import ACCESS_TOKEN, GUEST, REFRESH_TOKEN, USER
+from app.auth.helpers import get_hashed_password, verify_password
 from app.auth.interfaces import AuthInterface, JWTTokenInterface
 from app.auth.models import Role, Token, User
 from app.auth.schemas import CreateUserRequest
 from app.core.config import settings
 from app.core.database import get_db
-
-bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 class JWTTokenService(JWTTokenInterface):
@@ -141,16 +139,21 @@ class AuthService(AuthInterface):
       role = self.db.query(Role).filter(Role.name == USER).first()
       user = User(
         **create_user_request.model_dump(exclude=["password", "role_id"]),
-        password=bcrypt_context.hash(create_user_request.password),
+        password=get_hashed_password(create_user_request.password),
         role_id=role.id if role else None,
       )
       self.db.add(user)
       self.db.commit()
-    except IntegrityError  as e:
+    except IntegrityError as e:
       if "unique constraint" in str(e):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already exists")
+        raise HTTPException(
+          status_code=status.HTTP_400_BAD_REQUEST, detail="Email already exists"
+        )
       else:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to register user")
+        raise HTTPException(
+          status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+          detail="Failed to register user",
+        )
     return user
 
   def login(self, email: str, password: str):
@@ -158,7 +161,7 @@ class AuthService(AuthInterface):
 
     if not user:
       return False
-    if not bcrypt_context.verify(password, user.password):
+    if not verify_password(password, user.password):
       return False
     access_token = self.jwt_token_service.create_token(
       user.email, user.id, timedelta(minutes=20)
