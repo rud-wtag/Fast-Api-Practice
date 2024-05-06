@@ -1,0 +1,5 @@
+FROM postgres:16-alpine
+
+ENV POSTGRES_USER=admin
+ENV POSTGRES_PASSWORD=admin
+ENV POSTGRES_DB=fastapi_db
