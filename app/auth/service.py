@@ -155,6 +155,43 @@ class AuthService(AuthInterface):
           detail="Failed to register user",
         )
     return user
+  
+  # def create_reset_password_token(self, email: str):
+  #   password_access_token = self.jwt_token_service.create_token(
+  #     email, timedelta(minutes=20)
+  #   )
+  #   return password_access_token
+  
+  # def forgot_password(self, user, background_tasks: BackgroundTasks):
+  #   try:
+  #     password_access_token = self.jwt_token_service.create_token(
+  #       user.email, timedelta(minutes=20)
+  #     )
+  #     forget_url_link =  f"{settings.APP_HOST}{settings.FORGET_PASSWORD_URL}/{password_access_token}"
+      
+  #     email_body = { "company_name": settings.MAIL_FROM_NAME,
+  #                   "link_expiry_min": settings.FORGET_PASSWORD_LINK_EXPIRE_MINUTES,
+  #                   "reset_link": forget_url_link }
+
+  #     message = MessageSchema(
+  #       subject="Password Reset Instructions",
+  #       recipients=[user.email],
+  #       template_body=email_body,
+  #       subtype=MessageType.html
+  #     )
+      
+  #     template_name = "mail/password_reset.html"
+
+  #     fm = FastMail(mail_conf)
+  #     background_tasks.add_task(fm.send_message, message, template_name)
+
+  #     return JSONResponse(status_code=status.HTTP_200_OK,
+  #       content={"message": "Email has been sent", "success": True,
+  #           "status_code": status.HTTP_200_OK})
+  #   except Exception as e:
+  #     raise CustomHttpException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+  #           detail="Something Unexpected, Server Error", error_level=ErrorLevel.ERROR_LEVEL_2)
+
 
   def login(self, email: str, password: str):
     user = self.db.query(User).filter(User.email == email).first()

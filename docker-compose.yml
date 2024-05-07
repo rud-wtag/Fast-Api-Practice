@@ -1,4 +1,4 @@
-version: '3'
+version: '3.8'
 
 services:
   app:
@@ -6,6 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile.appserver
     command: "uvicorn app.main:app --reload --host 0.0.0.0 --port 80"
+    container_name: fast_api
     volumes:
       - .:/app
     ports:
@@ -19,15 +20,27 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.pgsql
+    container_name: postgresql
     volumes:
       - psql_volume:/var/lib/postgresql/data
     networks:
       - fast_api
 
+  smtp-service:
+    image: axllent/mailpit
+    restart: unless-stopped
+    container_name: smtp
+    networks:
+      - fast_api
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+
   pgadmin:
     build:
       context: .
       dockerfile: Dockerfile.pgadmin
+    container_name: pgadmin
     volumes:
       - pgadmin_volume:/var/lib/pgadmin
     ports:

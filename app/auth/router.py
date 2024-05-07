@@ -25,8 +25,9 @@ async def register(
 
 @auth_router.post("/login")
 async def login_for_access_token(
+  background_task: BackgroundTasks,
   form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-  auth_service: AuthInterface = Depends(AuthService),
+  auth_service: AuthInterface = Depends(AuthService)
 ):
   tokens = auth_service.login(form_data.username, form_data.password)
   response = JSONResponse(
@@ -38,6 +39,8 @@ async def login_for_access_token(
   response.set_cookie(
     key="refresh_token", value=tokens["refresh_token"], httponly=True, secure=True
   )
+  mail = Mail()
+  mail.send_email_background(background_task,'test','a@b.com','',template_body={'title': 'Hello World', 'name': 'John Doe'})
   return response
 
 
@@ -62,3 +65,5 @@ async def logout(
   auth_service: AuthInterface = Depends(AuthService),
 ):
   return auth_service.logout(user, access_token, refresh_token)
+
+
